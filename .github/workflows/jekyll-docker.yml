@@ -1,0 +1,40 @@
+name: Build Angular + Cordova Android
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Install Cordova CLI
+        run: npm install -g cordova
+
+      - name: Build Angular App
+        run: npm run build -- --prod
+
+      - name: Copy Angular Build to Cordova www
+        run: |
+          rm -rf www/*
+          cp -r dist/android/* www/
+
+      - name: Add Android Platform (if not exists)
+        run: |
+          cordova platform ls | grep android || cordova platform add android
+
+      - name: Build Cordova Android
+        run: cordova build android --release
